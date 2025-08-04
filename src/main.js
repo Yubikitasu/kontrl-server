@@ -1,13 +1,8 @@
-// import './style.css'
 const video = document.querySelector('video')
-// Import the functions you need from the SDKs you need
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, getDoc, collection, setDoc, doc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyA6gkVmMcbZybHoAEWVD4bKa8Pllo-ARR8",
   authDomain: "webrtc-project-f6fa8.firebaseapp.com",
@@ -86,6 +81,26 @@ answerButton.addEventListener('click', async (e) => {
       }
     })
   })
+
+  const videoBox = document.getElementById("remote");
+  const cursorRef = await doc(collection(callDocRef, "mouse"), "mousePosition");
+
+  videoBox.addEventListener('mousemove', (event) => {
+    const rect = videoBox.getBoundingClientRect(); // Get element's position on the page
+    const x = event.clientX - rect.left; // Mouse X relative to element
+    const y = event.clientY - rect.top;
+    
+    
+    // Scale to 1920x1080 virtual resolution
+    const virtualX = (x / rect.width) * 1920;
+    const virtualY = (y / rect.height) * 1080;
+
+    console.log(`Mapped position: (${virtualX.toFixed(1)}, ${virtualY.toFixed(1)})`);
+    setDoc(cursorRef, {
+      x: virtualX.toFixed(1),
+      y: virtualY.toFixed(1)
+    });
+  });
 })
 
 const callDocRef = collection(db, "calls");
