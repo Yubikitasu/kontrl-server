@@ -5,7 +5,7 @@ import { getFirestore, getDoc, collection, setDoc, doc, onSnapshot, addDoc, dele
 
 
 // Change your firebase config
-// Create your own Firebase project, then config it here. 
+// Create your own Firebase project, set up your own Firestore, then config it here. 
 const firebaseConfig = {
   apiKey: "AIzaSyCGGgiJUYXy-LIW6YdQRhDXJYc5CWsq_OE",
   authDomain: "desktop-control-46b64.firebaseapp.com",
@@ -38,11 +38,35 @@ let remoteStream = new MediaStream();
 pc.ontrack = (e) => {
   e.streams[0].getTracks().forEach(track => {
     remoteStream.addTrack(track);
-    console.log("Got track: ", track);
+    // console.log("Got track: ", track);
   })
 };
 
-document.getElementById('remote').srcObject = remoteStream
+let remoteChannel;
+
+pc.ondatachannel = (event) => {
+  remoteChannel = event.channel;
+
+  remoteChannel.onopen = () => {
+    let timeoutId;
+
+    const videoBox = document.getElementById("remote");
+
+    videoBox.addEventListener('mousemove', (event) => {
+      const rect = videoBox.getBoundingClientRect(); // Get element's position on the page
+      const x = event.clientX - rect.left; // Mouse X relative to element
+      const y = event.clientY - rect.top;
+      
+      // Scale to 1920x1080 virtual resolution
+      const virtualX = (x / rect.width) * 1920;
+      const virtualY = (y / rect.height) * 1080;
+
+      remoteChannel.send(JSON.stringify({x: virtualX.toFixed(0), y: virtualY.toFixed(0)}));
+    });
+  };
+};
+
+document.getElementById('remote').srcObject = remoteStream;
 
 const answerButton = document.getElementById("answerButton");
 
@@ -54,74 +78,46 @@ answerButton.addEventListener('click', async (e) => {
   const callDoc = await getDoc(callDocRef);
   const offer = callDoc.data();
 
-  await pc.setRemoteDescription(offer);
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer)
-  .then(async () => {
-    await setDoc(callDocRef, answer);
-    console.log("Answered call")
-  })
-  .catch(e => console.log(e));
-  console.log(callDoc.data());
-
   const answerCandidateRef = await collection(callDocRef, "answerCandidates");
   const offerCandidateRef = await collection(callDocRef, "offerCandidates");
 
 
   pc.onicecandidate = event => {
-    if (event.candidate) {
+  if (event.candidate) {
       addDoc(answerCandidateRef, event.candidate.toJSON())
-      .then(console.log("Added answer candidate."))
-      .catch(e => {console.log("Something happended! Error: ", e)});
+      // .then(console.log("Added answer candidate."))
+      // .catch(e => {console.log("Something happended! Error: ", e)});
+      // console.log(event.candidate.toJSON());
     }
   }
+
+
+  await pc.setRemoteDescription(offer);
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer)
+  .then(async () => {
+    await setDoc(callDocRef, answer);
+    console.log("Answered call");
+  })
+  .catch(e => console.log(e));
+  // console.log(callDoc.data());
 
   const snapshotRemoteCandidate = onSnapshot(offerCandidateRef, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         pc.addIceCandidate(change.doc.data());
-        console.log(change.doc.data());
+        // console.log(change.doc.data());
       }
     })
   })
 
   const videoBox = document.getElementById("remote");
   const cursorRef = await doc(collection(callDocRef, "mouse"), "mousePosition");
-
-  // ADD HERE
-  
-  let timeoutId;
-
-  videoBox.addEventListener('mousemove', (event) => {
-      // Clear any previous timeout to debounce
-    clearTimeout(timeoutId);
-    let timeout = 1250;
-    // Set a new timeout
-    timeoutId = setTimeout( async () => {
-      const rect = videoBox.getBoundingClientRect(); // Get element's position on the page
-      const x = event.clientX - rect.left; // Mouse X relative to element
-      const y = event.clientY - rect.top;
-      
-      // Scale to 1920x1080 virtual resolution
-      const virtualX = (x / rect.width) * 1920;
-      const virtualY = (y / rect.height) * 1080;
-
-      console.log(`Mouse stopped moving for ${timeout}ms`);
-      console.log("Mouse position:", virtualX.toFixed(0), virtualY.toFixed(0));
-      
-      // Set mouse position here with setDoc()...
-      const cursorRef = await doc(collection(callDocRef, "mouse"), "mousePosition");
-      setDoc(cursorRef, {
-        x: virtualX.toFixed(0),
-        y: virtualY.toFixed(0)
-      });
-    }, timeout); 
-  });
 })
 
-const callDocRef = collection(db, "calls");
+const callDocsRef = collection(db, "calls");
 
-const getIds = onSnapshot(callDocRef, (snapshot) => {
+const getIds = onSnapshot(callDocsRef, (snapshot) => {
   snapshot.docChanges().forEach((change) => {
     if (change.type === "added") {
       const id = change.doc.id;
@@ -135,7 +131,3 @@ const getIds = onSnapshot(callDocRef, (snapshot) => {
     }
   })
 })
-
-
-
-// ADD IN LATER
