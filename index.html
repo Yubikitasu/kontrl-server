@@ -19,12 +19,16 @@
   <body
     class="content d-flex flex-column justify-content-center align-items-center"
   >
-    <div class="d-flex justify-content-center align-items-center m-3">
-      <input type="text" id="answerId" class="form-control border-2 mx-3" />
-      <button id="answerButton" class="btn btn-primary">Answer</button>
+    <div id="answerContainer" class="d-flex flex-column justify-content-center align-items-center m-3">
+      <div class="d-flex">
+        <input type="text" id="answerId" class="form-control border-2 mx-3" />
+        <button id="answerButton" class="btn btn-primary">Answer</button>
+      </div>
+      <div id="callerIds"></div>
     </div>
-    <div id="callerIds"></div>
-    <video id="remote" autoplay style="max-width: 1000px; width: 100vw"></video>
+    <div id="videoContainer">
+      <video id="remote" autoplay style="max-width: 1000px; width: 100vw"></video>
+    </div>
     <script type="module" src="src/main.js"></script>
   </body>
 </html>

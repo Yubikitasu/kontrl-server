@@ -3,14 +3,17 @@ const video = document.querySelector('video')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, getDoc, collection, setDoc, doc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
 
+
+// Change your firebase config
+// Create your own Firebase project, then config it here. 
 const firebaseConfig = {
-  apiKey: "AIzaSyA6gkVmMcbZybHoAEWVD4bKa8Pllo-ARR8",
-  authDomain: "webrtc-project-f6fa8.firebaseapp.com",
-  projectId: "webrtc-project-f6fa8",
-  storageBucket: "webrtc-project-f6fa8.firebasestorage.app",
-  messagingSenderId: "1025853139038",
-  appId: "1:1025853139038:web:e6b6752c0b0eaa12466ccf",
-  measurementId: "G-0B51NWD63K"
+  apiKey: "AIzaSyCGGgiJUYXy-LIW6YdQRhDXJYc5CWsq_OE",
+  authDomain: "desktop-control-46b64.firebaseapp.com",
+  projectId: "desktop-control-46b64",
+  storageBucket: "desktop-control-46b64.firebasestorage.app",
+  messagingSenderId: "95801441442",
+  appId: "1:95801441442:web:2ed1fca0974d50115aabfb",
+  measurementId: "G-KTD4WK0YLZ"
 };
 
 // Initialize Firebase
@@ -85,21 +88,34 @@ answerButton.addEventListener('click', async (e) => {
   const videoBox = document.getElementById("remote");
   const cursorRef = await doc(collection(callDocRef, "mouse"), "mousePosition");
 
-  videoBox.addEventListener('mousemove', (event) => {
-    const rect = videoBox.getBoundingClientRect(); // Get element's position on the page
-    const x = event.clientX - rect.left; // Mouse X relative to element
-    const y = event.clientY - rect.top;
-    
-    
-    // Scale to 1920x1080 virtual resolution
-    const virtualX = (x / rect.width) * 1920;
-    const virtualY = (y / rect.height) * 1080;
+  // ADD HERE
+  
+  let timeoutId;
 
-    console.log(`Mapped position: (${virtualX.toFixed(1)}, ${virtualY.toFixed(1)})`);
-    setDoc(cursorRef, {
-      x: virtualX.toFixed(1),
-      y: virtualY.toFixed(1)
-    });
+  videoBox.addEventListener('mousemove', (event) => {
+      // Clear any previous timeout to debounce
+    clearTimeout(timeoutId);
+    let timeout = 1250;
+    // Set a new timeout
+    timeoutId = setTimeout( async () => {
+      const rect = videoBox.getBoundingClientRect(); // Get element's position on the page
+      const x = event.clientX - rect.left; // Mouse X relative to element
+      const y = event.clientY - rect.top;
+      
+      // Scale to 1920x1080 virtual resolution
+      const virtualX = (x / rect.width) * 1920;
+      const virtualY = (y / rect.height) * 1080;
+
+      console.log(`Mouse stopped moving for ${timeout}ms`);
+      console.log("Mouse position:", virtualX.toFixed(0), virtualY.toFixed(0));
+      
+      // Set mouse position here with setDoc()...
+      const cursorRef = await doc(collection(callDocRef, "mouse"), "mousePosition");
+      setDoc(cursorRef, {
+        x: virtualX.toFixed(0),
+        y: virtualY.toFixed(0)
+      });
+    }, timeout); 
   });
 })
 
@@ -113,8 +129,13 @@ const getIds = onSnapshot(callDocRef, (snapshot) => {
       if (type === "offer") {
         const newDiv = document.createElement('div');
         newDiv.textContent = "New offer ID: " + id;
+        newDiv.className = "callerId";
         document.getElementById("callerIds").prepend(newDiv);
       }
     }
   })
 })
+
+
+
+// ADD IN LATER

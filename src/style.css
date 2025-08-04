@@ -1,0 +1,30 @@
+#videoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: black;
+}
+
+#remote {
+    background-color: grey;
+}
+
+#answerContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.callerId {
+    width: 100%;
+    padding: 10px;
+}
