@@ -88,52 +88,18 @@ answerButton.addEventListener('click', async (e) => {
   })
 })
 
-// const stream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
+const callDocRef = collection(db, "calls");
 
-// const uniqueId = generateUniqueId();
-
-// console.log(uniqueId);
-// document.getElementById("callId").textContent = uniqueId;
-
-// const callDoc = await doc(db, "calls", uniqueId);
-// const answerDoc = await doc(db, "calls", "answer");
-
-// stream.getTracks().forEach(track => {
-//   pc.addTrack(track, stream);
-// })
-
-// const offer = await pc.createOffer();
-// try {
-//   pc.setLocalDescription(offer).then( async () => {
-//       const docRef = await setDoc(callDoc, offer);
-//       console.log("Added offer description.")
-//   });
-// } catch(e) {
-//   console.log("Error adding document: ", e)
-// }
-
-// const offerCandidateRef = await collection(callDoc, "offerCandidates");
-// const answerCandidateRef = await collection(callDoc, "answerCandidates");
-
-// pc.onicecandidate = event => {
-//   if (event.candidate) {
-//     addDoc(offerCandidateRef, event.candidate.toJSON())
-//     .then(console.log("Added offer candidate."))
-//     .catch(e => {console.log("Something happended! Error: ", e)});
-//   }
-// }
-
-// const snapshotRef = onSnapshot(callDoc, (snapshot) => {
-//   const answer = snapshot.data();
-//   if (!pc.currentRemoteDescription && answer.type === "answer") {
-//     pc.setRemoteDescription(answer);
-//   }
-// })
-
-// const snapshotRemoteCandidate = onSnapshot(answerCandidateRef, (snapshot) => {
-//   snapshot.docChanges().forEach((change) => {
-//     if (change.type === "added") {
-//       pc.addIceCandidate(change.doc.data());
-//     }
-//   })
-// })
+const getIds = onSnapshot(callDocRef, (snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") {
+      const id = change.doc.id;
+      const type = change.doc.data().type;
+      if (type === "offer") {
+        const newDiv = document.createElement('div');
+        newDiv.textContent = "New offer ID: " + id;
+        document.getElementById("callerIds").prepend(newDiv);
+      }
+    }
+  })
+})
