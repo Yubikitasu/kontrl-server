@@ -1,5 +1,6 @@
 {
-  "name": "webrtc-project",
+  "name": "kontrl-server",
+  "description": "Remote Server for Kontrl",
   "private": true,
   "version": "0.0.0",
   "type": "module",
