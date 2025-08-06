@@ -1,6 +1,6 @@
 {
   "name": "kontrl-server",
-  "description": "Remote Server for Kontrl",
+  "description": "A multi-platform remote desktop client server, allowing users to control their computers remotely from their browser.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
