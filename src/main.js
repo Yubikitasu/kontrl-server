@@ -121,6 +121,7 @@ pc.ondatachannel = (event) => {
           key: event.key,
         })
       );
+      console.log("Key down:", event.key);
     });
 
     document.addEventListener("keyup", (event) => {
@@ -128,6 +129,19 @@ pc.ondatachannel = (event) => {
         JSON.stringify({
           type: "keyup",
           key: event.key.toUpperCase(),
+        })
+      );
+    });
+
+
+    // Sending scroll events to the remote peer
+    // This allows the user to scroll on the remote desktop.
+    document.addEventListener("wheel", (event) => {
+      console.log("Scroll event:", event.deltaY);
+      remoteChannel.send(
+        JSON.stringify({
+          type: "scroll",
+          delta: event.deltaY * (-1) / 100,
         })
       );
     });
